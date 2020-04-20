@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+
+<h1>My First Heading</h1>
+<p>My first paragraph.</p>
+
+
+<input type="file" onchange="read(this)" name="uploadData" id="uploadData">
+<canvas id="the-canvas"></canvas>
+</body>
+</html>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.3.200/pdf.min.js"></script>
+<script>
+    function importPdf(file) {
+        // var PDF_URL = '/ctrade/files/lc.pdf';
+        pdfjsLib.getDocument(file).then(function(PDFDocumentInstance) {
+            var totalPages = PDFDocumentInstance.numPages;
+            // var pageNumber = 2;
+
+            // Extract the text
+            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+                getPageText(pageNumber, PDFDocumentInstance).then(function(textPage) {
+                    // Show the text of the page in the console
+                    console.log('page :',pageNumber);
+                    console.log(textPage)
+                });
+            }
+
+        }, function(reason) {
+            // PDF loading error
+            console.error(reason);
+        });
+    }
+
+    function getPageText(pageNum, PDFDocumentInstance) {
+        // Return a Promise that is solved once the text of the page is retrieven
+        return new Promise(function(resolve, reject) {
+            PDFDocumentInstance.getPage(pageNum).then(function(pdfPage) {
+                // The main trick to obtain the text of the PDF page, use the getTextContent method
+                pdfPage.getTextContent().then(function(textContent) {
+                    var textItems = textContent.items;
+                    var finalString = "";
+                  
+                    // Concatenate the string of the item to the final string
+                    for (var i = 0; i < textItems.length; i++) {
+                       
+                        
+ 
+                        var item = textItems[i];
+                        finalString += item.str + " ";
+                    
+                    }
+                   
+                // Solve promise with the text retrieven from the page
+                    resolve(finalString);
+                });
+            });
+        });
+    }
+
+    function readFile(file) {
+        const reader = new FileReader()
+
+        return new Promise((resolve, reject) => {
+            let fr = new FileReader();
+            fr.onload = x => resolve(fr.result);
+            fr.readAsDataURL(file);
+            reader.onload = event => resolve(event.target.result)
+    reader.onerror = error => reject(error)
+    reader.readAsText(file)
+        })
+    }
+
+    async function read(input) {
+        importPdf(await readFile(input.files[0]));
+    }
+</script>
